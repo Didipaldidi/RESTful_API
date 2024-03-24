@@ -1,20 +1,36 @@
-# pull official base image
-FROM python:3.12.0-slim-bookworm
+# Use a Windows base image
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
-# set working directory
-RUN mkdir -p /usr/src/app
+# Set working directory
 WORKDIR /usr/src/app
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# add and install requirements
+# Install system dependencies
+# Note: Windows uses different package management tools (e.g., Chocolatey)
+RUN powershell -Command \
+    Set-ExecutionPolicy Bypass -Scope Process -Force; \
+    iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex; \
+    choco install netcat traditional -y; \
+    choco install gcc -y; \
+    choco install postgresql -y;
+
+# Add and install Python requirements
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-# add app
+# Add app
 COPY . .
 
-# run server
-CMD python manage.py run -h 0.0.0.0
+# Add entrypoint script (if needed)
+# Note: PowerShell scripts (.ps1) are commonly used in Windows environments
+# Ensure that entrypoint.sh is converted to a .ps1 PowerShell script if necessary
+COPY ./entrypoint.sh .
+RUN chmod +x /usr/src/app/entrypoint.sh
+
+# Example for converting entrypoint.sh functionality to a PowerShell (ps1) script
+# COPY ./entrypoint.ps1 .
+# RUN powershell -Command Set-ExecutionPolicy Unrestricted
+# RUN powershell -Command ./entrypoint.ps1
