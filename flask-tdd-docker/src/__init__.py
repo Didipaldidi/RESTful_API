@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from flask_restx import Resource, Api
+from flask_restx import Api, Resource, fields
 
 app = Flask(__name__)
 
